@@ -1554,6 +1554,7 @@ func TestInt_WriteToArray(t *testing.T) {
 }
 
 type gethAddress [20]byte
+type gocoreAddress [22]byte
 
 // SetBytes sets the address to the value of b.
 // If b is larger than len(a) it will panic.
@@ -1564,10 +1565,27 @@ func (a *gethAddress) setBytes(b []byte) {
 	copy(a[20-len(b):], b)
 }
 
+// SetBytes sets the address to the value of b.
+// If b is larger than len(a) it will panic.
+func (a *gocoreAddress) setBytes(b []byte) {
+	if len(b) > len(a) {
+		b = b[len(b)-22:]
+	}
+	copy(a[22-len(b):], b)
+}
+
 // BytesToAddress returns Address with value b.
 // If b is larger than len(h), b will be cropped from the left.
 func bytesToAddress(b []byte) gethAddress {
 	var a gethAddress
+	a.setBytes(b)
+	return a
+}
+
+// bytesToAddressGocore returns gocore Address with value b.
+// If b is larger than len(h), b will be cropped from the left.
+func bytesToAddressGocore(b []byte) gocoreAddress {
+	var a gocoreAddress
 	a.setBytes(b)
 	return a
 }
@@ -1613,6 +1631,35 @@ func TestByte20Representation(t *testing.T) {
 		// uint256.Int -> address
 		b := new(Int).SetBytes(bytearr)
 		got := gethAddress(b.Bytes20())
+
+		if got != exp {
+			t.Errorf("testcase %d: got %x exp %x", i, got, exp)
+		}
+	}
+}
+
+func TestByte22Representation(t *testing.T) {
+	for i, tt := range []string{
+		"1337fafafa0e320219838e859b2f9f18b72e3d4073ca50b37d",
+		"fafafa0e320219838e859b2f9f18b72e3d4073ca50b37d",
+		"0e320219838e859b2f9f18b72e3d4073ca50b37d",
+		"320219838e859b2f9f18b72e3d4073ca50b37d",
+		"838e859b2f9f18b72e3d4073ca50b37d",
+		"38e859b2f9f18b72e3d4073ca50b37d",
+		"f18b72e3d4073ca50b37d",
+		"b37d",
+		"01",
+		"",
+		"00",
+	} {
+		bytearr := hex2Bytes(tt)
+		// big.Int -> address
+		a := big.NewInt(0).SetBytes(bytearr)
+		exp := bytesToAddressGocore(a.Bytes())
+
+		// uint256.Int -> address
+		b := new(Int).SetBytes(bytearr)
+		got := gocoreAddress(b.Bytes22())
 
 		if got != exp {
 			t.Errorf("testcase %d: got %x exp %x", i, got, exp)

@@ -120,6 +120,26 @@ func (z *Int) Bytes20() [20]byte {
 	return b
 }
 
+// Bytes22 returns the value of z as a 22-byte big-endian array.
+func (z *Int) Bytes22() [22]byte {
+	var b [22]byte
+	// The PutUint*()s are inlined and we get 3x (load, bswap, store) instructions.
+	putUint48(b[0:6], z[2])
+	binary.BigEndian.PutUint64(b[6:14], z[1])
+	binary.BigEndian.PutUint64(b[14:22], z[0])
+	return b
+}
+
+func putUint48(b []byte, v uint64) {
+	_ = b[5] // bounds check hint to compiler; see golang.org/issue/14808
+	b[0] = byte(v >> 40)
+	b[1] = byte(v >> 32)
+	b[2] = byte(v >> 24)
+	b[3] = byte(v >> 16)
+	b[4] = byte(v >> 8)
+	b[5] = byte(v)
+}
+
 // Bytes returns the value of z as a big-endian byte slice.
 func (z *Int) Bytes() []byte {
 	b := z.Bytes32()
