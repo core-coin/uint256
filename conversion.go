@@ -438,7 +438,7 @@ func bigEndianUint56(b []byte) uint64 {
 		uint64(b[2])<<32 | uint64(b[1])<<40 | uint64(b[0])<<48
 }
 
-// EncodeRLP implements the rlp.Encoder interface from go-ethereum
+// EncodeRLP implements the rlp.Encoder interface from go-core
 // and writes the RLP encoding of z to w.
 func (z *Int) EncodeRLP(w io.Writer) error {
 	if z == nil {

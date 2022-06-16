@@ -1553,17 +1553,7 @@ func TestInt_WriteToArray(t *testing.T) {
 	}
 }
 
-type gethAddress [20]byte
 type gocoreAddress [22]byte
-
-// SetBytes sets the address to the value of b.
-// If b is larger than len(a) it will panic.
-func (a *gethAddress) setBytes(b []byte) {
-	if len(b) > len(a) {
-		b = b[len(b)-20:]
-	}
-	copy(a[20-len(b):], b)
-}
 
 // SetBytes sets the address to the value of b.
 // If b is larger than len(a) it will panic.
@@ -1574,14 +1564,6 @@ func (a *gocoreAddress) setBytes(b []byte) {
 	copy(a[22-len(b):], b)
 }
 
-// BytesToAddress returns Address with value b.
-// If b is larger than len(h), b will be cropped from the left.
-func bytesToAddress(b []byte) gethAddress {
-	var a gethAddress
-	a.setBytes(b)
-	return a
-}
-
 // bytesToAddressGocore returns gocore Address with value b.
 // If b is larger than len(h), b will be cropped from the left.
 func bytesToAddressGocore(b []byte) gocoreAddress {
@@ -1590,52 +1572,23 @@ func bytesToAddressGocore(b []byte) gocoreAddress {
 	return a
 }
 
-type gethHash [32]byte
+type gocoreHash [32]byte
 
 // SetBytes sets the address to the value of b.
 // If b is larger than len(a) it will panic.
-func (a *gethHash) setBytes(b []byte) {
+func (a *gocoreHash) setBytes(b []byte) {
 	if len(b) > len(a) {
 		b = b[len(b)-32:]
 	}
 	copy(a[32-len(b):], b)
 }
 
-// BytesToHash returns gethHash with value b.
+// BytesToHash returns gocoreHash with value b.
 // If b is larger than len(h), b will be cropped from the left.
-func bytesToHash(b []byte) gethHash {
-	var a gethHash
+func bytesToHash(b []byte) gocoreHash {
+	var a gocoreHash
 	a.setBytes(b)
 	return a
-}
-
-func TestByte20Representation(t *testing.T) {
-	for i, tt := range []string{
-		"1337fafafa0e320219838e859b2f9f18b72e3d4073ca50b37d",
-		"fafafa0e320219838e859b2f9f18b72e3d4073ca50b37d",
-		"0e320219838e859b2f9f18b72e3d4073ca50b37d",
-		"320219838e859b2f9f18b72e3d4073ca50b37d",
-		"838e859b2f9f18b72e3d4073ca50b37d",
-		"38e859b2f9f18b72e3d4073ca50b37d",
-		"f18b72e3d4073ca50b37d",
-		"b37d",
-		"01",
-		"",
-		"00",
-	} {
-		bytearr := hex2Bytes(tt)
-		// big.Int -> address
-		a := big.NewInt(0).SetBytes(bytearr)
-		exp := bytesToAddress(a.Bytes())
-
-		// uint256.Int -> address
-		b := new(Int).SetBytes(bytearr)
-		got := gethAddress(b.Bytes20())
-
-		if got != exp {
-			t.Errorf("testcase %d: got %x exp %x", i, got, exp)
-		}
-	}
 }
 
 func TestByte22Representation(t *testing.T) {
@@ -1688,7 +1641,7 @@ func TestByte32Representation(t *testing.T) {
 
 		// uint256.Int -> address
 		b := new(Int).SetBytes(bytearr)
-		got := gethHash(b.Bytes32())
+		got := gocoreHash(b.Bytes32())
 
 		if got != exp {
 			t.Errorf("testcase %d: got %x exp %x", i, got, exp)
